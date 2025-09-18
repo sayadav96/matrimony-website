@@ -1,11 +1,13 @@
 "use client";
+import { use as usePromise } from "react"; 
 import { notFound } from "next/navigation";
 import { MOCK_PROFILES, ageFromDOB } from "@/lib/mockProfiles";
 import { loadCreatedProfiles } from "@/lib/profiles";
 import { COLORS } from "@/lib/colors";
 
 export default function ProfileDetail({ params }) {
-  const { id } = params;
+  const { id } = usePromise(params); 
+  // const { id } = params;
   let p = MOCK_PROFILES.find((x) => x.id === id);
   if (!p && typeof window !== "undefined") {
     p = loadCreatedProfiles().find((x) => x.id === id);

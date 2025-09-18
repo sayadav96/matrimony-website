@@ -47,6 +47,7 @@ export default function Navbar() {
             <NavLink href="/dashboard">Dashboard</NavLink>
             <NavLink href="/upload">Upload</NavLink>
             <NavLink href="/my-profiles">My Profiles</NavLink>
+            {isAuthed && <NavLink href="/shortlist">Shortlist</NavLink>}
           </div>
 
           {/* Right: CTA / Auth */}
@@ -66,7 +67,6 @@ export default function Navbar() {
                 >
                   Register
                 </Link>
-                <NavLink href="/shortlist">Shortlist</NavLink>
               </>
             ) : (
               <>
@@ -149,15 +149,8 @@ export default function Navbar() {
                 </>
               ) : (
                 <>
-                  {/* <Link
-                    href="/upload"
-                    className="px-3 py-2 rounded-lg text-sm font-semibold text-black text-center"
-                    style={{ backgroundColor: COLORS.mustard }}
-                    onClick={() => setOpen(false)}
-                  >
-                    + Upload Profile
-                  </Link> */}
                   <NavLink href="/settings">Account</NavLink>
+                  <NavLink href="/logout">Logout</NavLink>
                   <NavLink href="/logout">Logout</NavLink>
                 </>
               )}

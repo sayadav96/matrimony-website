@@ -1,7 +1,10 @@
 "use client";
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { COLORS } from "@/lib/colors";
 import Guard from "@/app/components/Guard";
+import { useAuth } from "@/lib/auth";
+import { saveCreatedProfile } from "@/lib/profiles";
 
 /** Language packs */
 const L = {
@@ -71,9 +74,11 @@ const L = {
 const STEPS = ["basics", "family", "eduWork", "photos"];
 
 export default function UploadProfilePage() {
+  const router = useRouter();  
   const [lang, setLang] = useState("en"); // "en" | "hi"
   const t = useMemo(() => L[lang], [lang]);
   const [step, setStep] = useState(0);
+  const { user } = useAuth();
 
   const [form, setForm] = useState({
     // Basics
@@ -110,43 +115,48 @@ export default function UploadProfilePage() {
     if (step > 0) setStep(step - 1);
   }
 
-async function onSubmit(e) {
-  e.preventDefault();
+  async function onSubmit(e) {
+    e.preventDefault();
 
-  // 1) Validate
-  if (!form.name || !form.dob || !form.birthPlace || !form.birthTime) {
-    alert(lang === "en" ? "Please fill required fields." : "कृपया आवश्यक जानकारी भरें।");
-    return; // <- important
+    // 1) Validate
+    if (!form.name || !form.dob || !form.birthPlace || !form.birthTime) {
+      alert(
+        lang === "en"
+          ? "Please fill required fields."
+          : "कृपया आवश्यक जानकारी भरें।"
+      );
+      return; // <- important
+    }
+
+    // 2) Build payload
+    const id = "local-" + Date.now();
+    const payload = {
+      id,
+      ownerEmail: user?.email || null, // make sure: const { user } = useAuth();
+      createdAt: new Date().toISOString(),
+      active: true,
+      name: form.name,
+      dob: form.dob,
+      community: form.community || "Gawli", // ok if undefined in this form
+      city: form.city || "",
+      education: form.education || "",
+      occupation: form.occupation || "",
+      photos:
+        Array.isArray(form.photos) && form.photos.length
+          ? form.photos
+          : ["/demo/placeholder.jpg"],
+      _raw: form, // keep full form for future edits
+    };
+
+    // 3) Save locally and go to My Profiles
+    saveCreatedProfile(payload); // import from "@/lib/profiles"
+    alert(
+      lang === "en"
+        ? "Profile saved locally. You can see it under My Profiles."
+        : "प्रोफ़ाइल लोकली सेव हो गई। आप इसे 'My Profiles' में देख सकते हैं।"
+    );
+    router.push("/my-profiles");
   }
-
-  // 2) Build payload
-  const id = "local-" + Date.now();
-  const payload = {
-    id,
-    ownerEmail: user?.email || null,       // make sure: const { user } = useAuth();
-    createdAt: new Date().toISOString(),
-    active: true,
-    name: form.name,
-    dob: form.dob,
-    community: form.community || "Gawli",   // ok if undefined in this form
-    city: form.city || "",
-    education: form.education || "",
-    occupation: form.occupation || "",
-    photos: Array.isArray(form.photos) && form.photos.length
-      ? form.photos
-      : ["/demo/placeholder.jpg"],
-    _raw: form, // keep full form for future edits
-  };
-
-  // 3) Save locally and go to My Profiles
-  saveCreatedProfile(payload);              // import from "@/lib/profiles"
-  alert(lang === "en"
-    ? "Profile saved locally. You can see it under My Profiles."
-    : "प्रोफ़ाइल लोकली सेव हो गई। आप इसे 'My Profiles' में देख सकते हैं।"
-  );
-  router.push("/my-profiles");
-}
-
 
   return (
     <Guard>
